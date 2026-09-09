@@ -1,46 +1,52 @@
-# Click-tracking backend
+# Бэкенд для трекинга кликов
 
-FastAPI + SQLite service used by the landing page's CTA buttons.
+Сервис на FastAPI + SQLite для CTA-кнопок лендинга.
 
 ```
-CTA (frontend) -> GET /click?offer=<brand>&sub1=<param>
-    -> generates click_id
-    -> stores click_id, offer, sub1, timestamp, ip, user_agent in SQLite
-    -> 302 redirect to the brand's official site
+CTA (фронтенд) -> GET /click?offer=<бренд>&sub1=<параметр>
+    -> генерирует click_id
+    -> сохраняет click_id, offer, sub1, timestamp, ip, user_agent в SQLite
+    -> 302-редирект на официальный сайт бренда
 ```
 
-## Endpoints
+## Эндпоинты
 
 - `GET /click?offer=Zenni Optical&sub1=hero_primary`
-  Records the click and 302-redirects to the brand's real site.
-  `offer` is matched case-insensitively against a small lookup table
-  (`OFFERS` in `main.py`) covering all 10 brands from the task list, so
-  the same backend works regardless of which brand's landing page calls it.
+  Логирует клик и делает 302-редирект на реальный сайт бренда.
+  `offer` сравнивается без учёта регистра со словарём `OFFERS` в `main.py`
+  (покрывает все 10 брендов из задания), так что один и тот же бэкенд
+  подходит для лендинга любого из этих брендов.
 - `GET /clicks`
-  Returns every stored click as JSON, newest first.
+  Все сохранённые клики в JSON, сначала новые.
+- `GET /dashboard`
+  Человекочитаемая HTML-страница со статистикой и таблицей кликов
+  (автообновление раз в 15 секунд).
 - `GET /`
   Health check.
 
-## Run locally
+## Запуск локально
 
 ```bash
 cd backend
-python3 -m venv .venv && source .venv/bin/activate   # optional but recommended
+python3 -m venv .venv && source .venv/bin/activate   # опционально, но желательно
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Then:
+Затем:
 
 ```bash
 curl -i "http://127.0.0.1:8000/click?offer=Zenni%20Optical&sub1=test123"
 curl "http://127.0.0.1:8000/clicks"
 ```
 
-A `clicks.db` SQLite file is created automatically next to `main.py` on
-first run.
+Открой в браузере `http://127.0.0.1:8000/dashboard`, чтобы увидеть клики
+в красивом виде.
 
-## Run with Docker
+Файл `clicks.db` (SQLite) создаётся автоматически рядом с `main.py` при
+первом запуске.
+
+## Запуск через Docker
 
 ```bash
 cd backend
@@ -48,35 +54,37 @@ docker build -t zenni-backend .
 docker run -p 8000:8000 zenni-backend
 ```
 
-Or just use `docker compose up` from the project root — see the top-level
-`README.md`.
+Либо просто `docker compose up` из корня проекта — см. `README.md` в корне.
 
-## Deploy (free options)
+## Деплой (бесплатные варианты)
 
-Any Python host works. Render's free tier is the quickest:
+Подойдёт любой Python-хостинг. Быстрее всего — бесплатный тариф Render:
 
-1. Push this `backend/` folder to a GitHub repo (or the whole project repo).
-2. On [render.com](https://render.com) → **New Web Service** → connect the repo.
+1. Запушь папку `backend/` в репозиторий на GitHub (можно и весь проект целиком).
+2. На [render.com](https://render.com) → **New Web Service** → подключи репозиторий.
    - Root directory: `backend`
    - Build command: `pip install -r requirements.txt`
    - Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-     (a `Procfile` with the same command is included, so Render/Heroku-style
-     platforms can also auto-detect it)
-3. Deploy. Render gives you a public URL like `https://your-app.onrender.com`.
-4. Put that URL in the frontend's `VITE_BACKEND_URL` env var (see
-   `frontend/.env.example`) and rebuild the frontend.
+     (в проекте есть `Procfile` с той же командой, так что Render/Heroku-подобные
+     платформы могут определить её автоматически)
+3. Задеплой. Render выдаст публичный URL вида `https://your-app.onrender.com`.
+4. Укажи этот URL в переменной `VITE_BACKEND_URL` фронтенда (см.
+   `frontend/.env.example`) и пересобери фронт.
 
-Railway, Fly.io, or PythonAnywhere work the same way — install
-`requirements.txt`, run the uvicorn start command, expose the port.
-Render, Railway and Fly.io can also all deploy straight from the included
-`Dockerfile` instead of buildpacks, if you prefer.
+Railway, Fly.io или PythonAnywhere работают так же — установить
+`requirements.txt`, запустить команду uvicorn, открыть порт. Render, Railway
+и Fly.io также умеют деплоить прямо из приложенного `Dockerfile`, если
+buildpacks не нужны.
 
-## Notes on the implementation
+## Заметки по реализации
 
-- `click_id` is a `uuid4`, stored as the primary key.
-- SQLite is used for zero-setup persistence; `clicks` table has one row per
-  click with `click_id, offer, sub1, timestamp, ip, user_agent`.
-- CORS is open (`allow_origins=["*"]`) since the frontend is a static site
-  deployed on a different origin and only GET/no-cookie endpoints are exposed.
-- `ip` prefers `X-Forwarded-For` (set by most PaaS reverse proxies) and falls
-  back to the raw connection IP for local runs.
+- `click_id` — `uuid4`, хранится как primary key.
+- SQLite используется для персистентности без лишней настройки; в таблице
+  `clicks` одна строка на клик: `click_id, offer, sub1, timestamp, ip, user_agent`.
+- CORS полностью открыт (`allow_origins=["*"]`), т.к. фронтенд — статический
+  сайт на другом домене, а наружу торчат только GET-эндпоинты без кук.
+- `ip` берётся из `X-Forwarded-For` (его подставляет большинство PaaS-прокси),
+  при локальном запуске — из прямого соединения.
+- `/dashboard` рендерит HTML прямо в Python (без шаблонизатора и внешних
+  зависимостей) — таблица кликов, счётчики по офферу/CTA, автообновление
+  через `<meta http-equiv="refresh">`.

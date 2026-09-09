@@ -1,118 +1,129 @@
-# Test task — Zenni Optical landing page + click-tracking backend
+# Тестовое задание — лендинг Zenni Optical + бэкенд для трекинга кликов
 
-Brand chosen: **Zenni Optical**.
+Выбранный бренд: **Zenni Optical**.
 
 ```
 project/
-  frontend/   Vue 3 + Vite landing page
-  backend/    FastAPI + SQLite click-tracking service
+  frontend/   Лендинг на Vue 3 + Vite
+  backend/    Сервис трекинга кликов на FastAPI + SQLite
 ```
 
-## How it works end to end
+## Как это работает целиком
 
 ```
-User clicks a CTA on the landing page
-  -> dataLayer.push({event: 'cta_click', ...})      (GTM/GA4 tracking)
-  -> browser navigates to backend GET /click?offer=Zenni Optical&sub1=<id>
-  -> backend generates click_id, stores the click in SQLite
-  -> backend responds 302 -> https://www.zennioptical.com
+Пользователь кликает по CTA на лендинге
+  -> dataLayer.push({event: 'cta_click', ...})      (трекинг GTM/GA4)
+  -> браузер переходит на бэкенд GET /click?offer=Zenni Optical&sub1=<id>
+  -> бэкенд генерирует click_id, сохраняет клик в SQLite
+  -> бэкенд отвечает 302 -> https://www.zennioptical.com
 ```
 
-`GET /clicks` on the backend returns every stored click as JSON.
+`GET /clicks` на бэкенде отдаёт все сохранённые клики в JSON, а
+`GET /dashboard` — ту же информацию, но в виде красивой HTML-страницы со
+статистикой (см. `backend/README.md`).
 
-## Stack & tools used
+## Стек и инструменты
 
-- **Frontend:** Vue 3 (Composition API, `<script setup>`), Vite, plain CSS
-  with design tokens (no UI kit) — see `frontend/README.md`.
-- **Backend:** Python, FastAPI, SQLite (`sqlite3` stdlib) — see
-  `backend/README.md`.
-- **Containerization:** Docker + Docker Compose (`docker-compose.yml`,
-  `backend/Dockerfile`, `frontend/Dockerfile`) for one-command local runs
-  and container-based deploys.
-- **Tooling used while building:** Claude (code generation + this write-up),
-  Vite/npm and pip for scaffolding and dependencies, Playwright for local
-  visual QA (desktop + mobile screenshots) during development.
+- **Фронтенд:** Vue 3 (Composition API, `<script setup>`), Vite, чистый CSS
+  с дизайн-токенами (без UI-кита) — подробнее в `frontend/README.md`.
+- **Бэкенд:** Python, FastAPI, SQLite (`sqlite3` из стандартной библиотеки) —
+  подробнее в `backend/README.md`.
+- **Контейнеризация:** Docker + Docker Compose (`docker-compose.yml`,
+  `backend/Dockerfile`, `frontend/Dockerfile`) — для запуска одной командой
+  локально и для деплоя через контейнеры.
+- **Аналитика:** GA4 (`gtag.js`) и Google Tag Manager подключаются
+  динамически в `frontend/src/analytics.js` на основе переменных окружения
+  `VITE_GA_ID` / `VITE_GTM_ID` — никаких ID не зашито в коде.
 
-## Run everything locally
+## Запуск всего локально
 
 ```bash
-# terminal 1 — backend
+# терминал 1 — бэкенд
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 
-# terminal 2 — frontend
+# терминал 2 — фронтенд
 cd frontend
 npm install
 npm run dev
 ```
 
-Open the printed Vite URL (usually `http://127.0.0.1:5173`), click any CTA,
-and check `http://127.0.0.1:8000/clicks` to see the stored click.
+Открой адрес, который выведет Vite (обычно `http://127.0.0.1:5173`), кликни
+по любому CTA и проверь `http://127.0.0.1:8000/dashboard` — там будет виден
+сохранённый клик.
 
-## Run everything with Docker
+## Запуск всего через Docker
 
-The whole stack (backend + frontend, wired together) can be started with
-one command from the project root:
+Весь стек (бэкенд + фронтенд, уже связанные между собой) можно поднять
+одной командой из корня проекта:
 
 ```bash
 docker compose up --build
 ```
 
-This builds and runs:
+Это соберёт и запустит:
 
-- **backend** — FastAPI in a `python:3.12-slim` container, on `localhost:8000`,
-  with `clicks.db` persisted in a named volume (`clicks_data`) so data
-  survives restarts.
-- **frontend** — Vue app built inside a `node:20-alpine` stage, then served
-  as static files by `nginx:1.27-alpine`, on `localhost:8080`. It's built
-  with `VITE_BACKEND_URL=http://localhost:8000` (see `docker-compose.yml`),
-  since the browser — not the frontend container — is what calls the
-  backend, so it needs a host-reachable URL rather than the internal
-  `backend` service name.
+- **backend** — FastAPI в контейнере `python:3.12-slim`, на `localhost:8000`,
+  `clicks.db` хранится в именованном volume (`clicks_data`), чтобы данные
+  переживали перезапуск.
+- **frontend** — Vue-приложение собирается в контейнере `node:20-alpine`, а
+  раздаётся статикой через `nginx:1.27-alpine` на `localhost:8080`. Собирается
+  с `VITE_BACKEND_URL=http://localhost:8000` (см. `docker-compose.yml`), т.к.
+  к бэкенду обращается именно браузер, а не контейнер фронтенда — поэтому
+  нужен URL, доступный с хоста, а не внутреннее имя сервиса `backend`.
 
-Open `http://localhost:8080`, click a CTA, then check
-`http://localhost:8000/clicks` to see it logged.
+Открой `http://localhost:8080`, кликни по CTA, затем проверь
+`http://localhost:8000/dashboard`, чтобы увидеть клик в списке.
 
-To point the Dockerized frontend at a backend deployed elsewhere (e.g. on
-Render), change `args.VITE_BACKEND_URL` in `docker-compose.yml` before
-running `docker compose up --build`, or build the `frontend` image
-standalone with `--build-arg VITE_BACKEND_URL=...` (see
+Чтобы направить задеплоенный через Docker фронтенд на бэкенд, поднятый
+где-то ещё (например, на Render), поменяй `args.VITE_BACKEND_URL` в
+`docker-compose.yml` перед `docker compose up --build`, либо собери образ
+`frontend` отдельно с `--build-arg VITE_BACKEND_URL=...` (и при желании
+`--build-arg VITE_GA_ID=...` / `--build-arg VITE_GTM_ID=...` — см.
 `frontend/README.md`).
 
-Each service also has its own standalone `Dockerfile` if you want to build
-or deploy them independently (`backend/Dockerfile`, `frontend/Dockerfile`) —
-most container hosts (Render, Railway, Fly.io) can deploy straight from
-these instead of buildpacks.
+У каждого сервиса есть свой отдельный `Dockerfile`, если нужно собирать
+или деплоить их независимо (`backend/Dockerfile`, `frontend/Dockerfile`) —
+большинство хостингов контейнеров (Render, Railway, Fly.io) умеют деплоить
+прямо из них, без buildpacks.
 
-## Deploying publicly
+## Деплой в публичный доступ
 
-- **Backend:** deploy `backend/` to Render/Railway/Fly.io (free tier) —
-  step-by-step in `backend/README.md`. A `Procfile` is included.
-- **Frontend:** set `VITE_BACKEND_URL` to the deployed backend URL, run
-  `npm run build`, deploy `frontend/dist/` to Vercel/Netlify/GitHub Pages —
-  step-by-step in `frontend/README.md`.
+- **Бэкенд:** задеплой `backend/` на Render/Railway/Fly.io (бесплатный тариф) —
+  пошагово в `backend/README.md`. `Procfile` уже включён.
+- **Фронтенд:** задай `VITE_BACKEND_URL` (URL задеплоенного бэкенда), при
+  желании `VITE_GA_ID` / `VITE_GTM_ID`, собери `npm run build` и задеплой
+  `frontend/dist/` на Vercel/Netlify/GitHub Pages — пошагово, включая
+  настройку Vercel для монорепо, в `frontend/README.md`.
 
-## Analytics confirmation
+## Аналитика
 
-`frontend/index.html` has both the GA4 (`gtag.js`) snippet and the GTM
-container snippet installed, plus a `noscript` GTM fallback. CTA clicks push
-a `cta_click` custom event to `dataLayer` with `cta_id`/`cta_label`/`offer`
-before redirecting, so GTM/GA4 can track button engagement without any
-extra frontend work — just replace the placeholder `G-XXXXXXXXXX` /
-`GTM-XXXXXXX` IDs with real ones and wire a Custom Event trigger on
-`cta_click` in GTM.
+`frontend/src/analytics.js` подключает GA4 (`gtag.js`) и контейнер Google Tag
+Manager (плюс `<noscript>`-фолбэк для GTM), но **только если заданы**
+переменные окружения `VITE_GA_ID` и/или `VITE_GTM_ID` — без них скрипты
+просто не грузятся, никаких плейсхолдеров вида `G-XXXXXXXXXX` в проде.
+Задать их можно в `.env` (см. `frontend/.env.example`) или как Environment
+Variables на хостинге (Vercel и т.п.).
 
-## Backend logic summary
+Клики по CTA пушат кастомное событие `cta_click` в `dataLayer` с
+`cta_id`/`cta_label`/`offer` перед редиректом, так что GTM/GA4 может
+отслеживать вовлечённость по кнопкам без дополнительного кода — достаточно
+завести Custom Event trigger на `cta_click` в GTM.
 
-- `GET /click` — reads `offer` + `sub1` query params, generates a `uuid4`
-  `click_id`, records `click_id, offer, sub1, timestamp, ip, user_agent` in
-  a `clicks` SQLite table, then issues a `302` redirect to the matching
-  brand's real website (`OFFERS` dict covers all 10 brands from the task,
-  matched case-insensitively; unknown offers fall back to Zenni Optical).
-- `GET /clicks` — returns all rows from `clicks`, newest first, as JSON.
-- CORS is open since the frontend is a separately-hosted static site.
+## Что делает бэкенд
 
-Tested locally end-to-end (Playwright): clicking a CTA on the running
-frontend hits the backend, a row appears in `/clicks` with the correct
-`offer`/`sub1`, and the browser lands on `zennioptical.com`.
+- `GET /click` — читает query-параметры `offer` + `sub1`, генерирует
+  `click_id` (`uuid4`), сохраняет `click_id, offer, sub1, timestamp, ip,
+  user_agent` в таблицу `clicks` в SQLite, затем делает `302`-редирект на
+  реальный сайт соответствующего бренда (словарь `OFFERS` покрывает все 10
+  брендов из задания, сравнение без учёта регистра; неизвестные офферы
+  падают на Zenni Optical по умолчанию).
+- `GET /clicks` — все строки из `clicks`, сначала новые, в JSON.
+- `GET /dashboard` — то же самое, но в виде HTML-страницы со статистикой
+  и автообновлением.
+- CORS открыт полностью, т.к. фронтенд задеплоен отдельно как статический сайт.
+
+Проверено локально целиком (Playwright): клик по CTA на запущенном фронтенде
+доходит до бэкенда, в `/clicks` появляется строка с правильными
+`offer`/`sub1`, а браузер оказывается на `zennioptical.com`.

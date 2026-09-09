@@ -3,10 +3,15 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Backend URL to bake into the static build (Vite env vars are compile-time).
-# Override at build time: docker build --build-arg VITE_BACKEND_URL=https://... .
+# These are baked into the static build at compile time (Vite env vars are
+# compile-time, not runtime). Override at build time, e.g.:
+#   docker build --build-arg VITE_BACKEND_URL=https://... --build-arg VITE_GA_ID=G-XXXX .
 ARG VITE_BACKEND_URL=http://localhost:8000
+ARG VITE_GA_ID=
+ARG VITE_GTM_ID=
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+ENV VITE_GA_ID=$VITE_GA_ID
+ENV VITE_GTM_ID=$VITE_GTM_ID
 
 COPY package*.json ./
 RUN npm ci
