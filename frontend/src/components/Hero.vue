@@ -1,5 +1,5 @@
 <script setup>
-import { fireCta } from '../config.js';
+import { fireCta } from "../config.js";
 </script>
 
 <template>
@@ -11,22 +11,39 @@ import { fireCta } from '../config.js';
           Видеть чётко.
           <span class="underline-wrap">
             Платить меньше.
-            <svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M2 18C60 8 220 6 298 16" stroke="#FFC93C" stroke-width="10" stroke-linecap="round" fill="none" />
+            <svg
+              class="underline"
+              viewBox="0 0 300 24"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 18C60 8 220 6 298 16"
+                stroke="#FFC93C"
+                stroke-width="10"
+                stroke-linecap="round"
+                fill="none"
+              />
             </svg>
           </span>
         </h1>
         <p class="hero__sub">
           Полный комплект очков по рецепту от $6.95, больше 1000 оправ и
-          примерка через камеру — вы точно увидите, как они будут выглядеть,
-          ещё до доставки.
+          примерка через камеру — вы точно увидите, как они будут выглядеть, ещё
+          до доставки.
         </p>
 
         <div class="hero__ctas">
-          <button class="btn btn-primary" @click="fireCta('hero_primary', 'Выбрать очки от $6.95')">
+          <button
+            class="btn btn-primary"
+            @click="fireCta('hero_primary', 'Выбрать очки от $6.95')"
+          >
             Выбрать очки от $6.95
           </button>
-          <button class="btn btn-ghost" @click="fireCta('hero_secondary', 'Примерить оправу онлайн')">
+          <button
+            class="btn btn-ghost"
+            @click="fireCta('hero_secondary', 'Примерить оправу онлайн')"
+          >
             Примерить оправу онлайн
           </button>
         </div>
@@ -39,17 +56,50 @@ import { fireCta } from '../config.js';
       </div>
 
       <div class="hero__art" aria-hidden="true">
-        <svg viewBox="0 0 420 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          viewBox="0 0 420 380"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <circle cx="205" cy="190" r="180" fill="#D7E5E4" />
           <circle cx="330" cy="90" r="46" fill="#FFC93C" />
           <g transform="translate(52 150)">
-            <circle cx="70" cy="70" r="66" fill="none" stroke="#16181D" stroke-width="7" />
-            <circle cx="248" cy="70" r="66" fill="none" stroke="#16181D" stroke-width="7" />
-            <path d="M136 62c0-14-12-18 0-18s0 4 0 18z" stroke="#16181D" stroke-width="7" stroke-linecap="round" fill="none" />
-            <path d="M4 58L-30 34" stroke="#16181D" stroke-width="7" stroke-linecap="round" />
-            <path d="M314 58l34-24" stroke="#16181D" stroke-width="7" stroke-linecap="round" />
+            <circle
+              cx="70"
+              cy="70"
+              r="66"
+              fill="none"
+              stroke="#16181D"
+              stroke-width="7"
+            />
+            <circle
+              cx="248"
+              cy="70"
+              r="66"
+              fill="none"
+              stroke="#16181D"
+              stroke-width="7"
+            />
+            <path
+              d="M4 58L-30 34"
+              stroke="#16181D"
+              stroke-width="7"
+              stroke-linecap="round"
+            />
+            <path
+              d="M314 58l34-24"
+              stroke="#16181D"
+              stroke-width="7"
+              stroke-linecap="round"
+            />
             <circle cx="70" cy="70" r="66" fill="#FF4B3E" fill-opacity="0.18" />
-            <circle cx="248" cy="70" r="66" fill="#FF4B3E" fill-opacity="0.18" />
+            <circle
+              cx="248"
+              cy="70"
+              r="66"
+              fill="#FF4B3E"
+              fill-opacity="0.18"
+            />
           </g>
         </svg>
       </div>
@@ -132,7 +182,7 @@ import { fireCta } from '../config.js';
 }
 
 .hero__trust li::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 7px;
