@@ -1,0 +1,125 @@
+:root {
+  --paper: #fbfaf6;
+  --ink: #16181d;
+  --ink-70: rgba(22, 24, 29, 0.68);
+  --ink-45: rgba(22, 24, 29, 0.45);
+  --coral: #ff4b3e;
+  --coral-dark: #e13c2f;
+  --amber: #ffc93c;
+  --mint: #d7e5e4;
+  --line: rgba(22, 24, 29, 0.12);
+
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0 20px;
+  }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 15px 30px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.btn-primary {
+  background: var(--coral);
+  color: #fff;
+  box-shadow: 0 6px 0 var(--coral-dark);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 var(--coral-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+.btn-ghost:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-dark:hover {
+  background: #000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # persist clicks.db across container restarts
+      - clicks_data:/app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # frontend calls the backend from the *browser*, so this must be a
+        # URL reachable from the host, not the internal "backend" hostname
+        VITE_BACKEND_URL: http://localhost:8000
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  clicks_data:
